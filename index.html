@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- SEO -->
-  <meta name="description" content="Scrmbled — a daily puzzle where you deduce the hidden transformation rule.">
+  <meta name="description" content="Scrmbled — repair the machine by figuring out what it does to words. A new puzzle every day.">
 
   <!-- Open Graph -->
   <meta property="og:title" content="Scrmbled">
-  <meta property="og:description" content="Can you figure out today's rule? A new puzzle every day.">
+  <meta property="og:description" content="Can you repair today's machine?">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://scrmbled.pages.dev">
   <meta property="og:image" content="https://scrmbled.pages.dev/preview.png">
@@ -18,7 +18,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Scrmbled">
-  <meta name="twitter:description" content="Can you figure out today's rule?">
+  <meta name="twitter:description" content="Can you repair today's machine?">
   <meta name="twitter:image" content="https://scrmbled.pages.dev/preview.png">
 </head>
 
@@ -31,16 +31,16 @@
       <button id="helpBtn" class="iconBtn">?</button>
     </div>
 
-    <p id="subtitle">Find the hidden transformation rule</p>
-    <p>Guess the rule transforming each word into the next. You get 6 tries.</p>
+    <p id="subtitle">Repair the machine</p>
+    <p>Figure out what the machine does to words, then fix a new one. You get 6 tries.</p>
 
     <!-- Puzzle examples -->
     <div id="examples"></div>
 
     <!-- Guess input -->
     <div class="row">
-      <input id="guessInput" placeholder="Type the rule..." />
-      <button id="submitGuess">Guess</button>
+      <input id="guessInput" placeholder="Type your answer..." />
+      <button id="submitGuess">Submit</button>
     </div>
 
     <p id="feedback"></p>
@@ -60,23 +60,45 @@
 
       <h2>How to play</h2>
 
-      <p>Each pair of words follows a hidden rule.</p>
-      <p>Your goal is to figure out the transformation.</p>
+      <p><b>Goal:</b> Discover the transformation rule, then repair a broken word.</p>
 
-      <ul>
-        <li>You get <b>6 guesses</b></li>
-        <li>Wrong guesses reveal another example</li>
-        <li>The rule is always consistent</li>
-      </ul>
+      <h3>Phase 1 — Find the rule</h3>
+      <p>You are shown two word transformations:</p>
 
       <div class="examples">
-        <div class="mono">SMILE → MILES</div>
-        <div class="mono">PLATE → LATEP</div>
+        <div class="mono">SILVER → REVLIS</div>
+        <div class="mono">RANDOM → MODNAR</div>
       </div>
 
-      <p><b>Example rule:</b> rotate letters left by 1</p>
+      <p>Type what rule changes the first word into the second.</p>
+      <p>Examples of valid answers:</p>
+      <ul>
+        <li>reverse</li>
+        <li>swap first and last</li>
+        <li>rotate left</li>
+      </ul>
+
+      <h3>Phase 2 — Repair the machine</h3>
+      <p>After identifying the rule, a corrupted word appears:</p>
+
+      <div class="examples">
+        <div class="mono">ELZZUP</div>
+      </div>
+
+      <p>Apply the same rule to repair it and type the correct word.</p>
+
+      <h3>Rules</h3>
+      <ul>
+        <li>You get <b>6 total guesses</b> across both phases</li>
+        <li>The timer starts automatically when the puzzle loads</li>
+        <li>Only one puzzle per day</li>
+        <li>Spelling matters</li>
+      </ul>
+
+      <p class="hint"><b>Tip:</b> The examples always use the exact same rule as the final repair.</p>
     </div>
   </div>
+
 
   <script type="module" src="/src/main.js"></script>
 </body>

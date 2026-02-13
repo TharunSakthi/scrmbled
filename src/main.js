@@ -59,7 +59,7 @@ function persist() {
 function startTimer() {
   if (!startTime) {
     startTime = Date.now();
-    persist();
+    persist(); // <-- add this so startTime is saved
   }
 
   if (timerInterval) return;
@@ -71,6 +71,7 @@ function startTimer() {
     timerEl.textContent = `Time: ${m}:${sec}`;
   }, 1000);
 }
+
 
 function stopTimer() {
   clearInterval(timerInterval);
@@ -96,12 +97,15 @@ function render() {
     `;
   }
 
+  examplesDiv.innerHTML += `<p class="small">Attempts: ${attempts}/6</p>`;
+
   if (finished) {
     input.disabled = true;
     btn.disabled = true;
     shareBtn.style.display = "inline-block";
   }
 }
+
 
 /* ---------------- Guess checking ---------------- */
 
@@ -132,6 +136,9 @@ btn.addEventListener("click", () => {
   startTimer();
 
   attempts++;
+  persist();
+  render();
+
 
   if (phase === "rule") {
     if (guess.includes(puzzle.ruleKeyword)) {
@@ -160,7 +167,7 @@ btn.addEventListener("click", () => {
   if (attempts >= 6) {
     won = false;
     persist();
-    endGame(`Out of attempts. Answer: ${puzzle.solution}`);
+    endGame(`Out of attempts. Repair answer: ${puzzle.solution}`);
   }
 
   input.value = "";
@@ -220,4 +227,8 @@ shareBtn.addEventListener("click", async () => {
 
 render();
 renderStats();
-if (startTime && !finished) startTimer();
+
+if (!finished) {
+  startTimer(); // always start immediately
+}
+
