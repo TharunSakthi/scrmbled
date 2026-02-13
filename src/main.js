@@ -20,15 +20,26 @@ const closeHelp = document.getElementById("closeHelp");
 /* ---------------- Help modal ---------------- */
 
 helpBtn.addEventListener("click", () => helpModal.classList.remove("hidden"));
-closeHelp.addEventListener("click", () => helpModal.classList.add("hidden"));
+
+function closeHelpModal() {
+  helpModal.classList.add("hidden");
+  beginRun(); // <-- timer starts here
+}
+
+closeHelp.addEventListener("click", closeHelpModal);
+
 helpModal.addEventListener("click", e => {
-  if (e.target === helpModal) helpModal.classList.add("hidden");
+  if (e.target === helpModal) closeHelpModal();
 });
+
 
 if (!localStorage.getItem("seenHelp")) {
   helpModal.classList.remove("hidden");
   localStorage.setItem("seenHelp", "1");
+} else {
+  beginRun(); // returning player → timer starts immediately
 }
+
 
 /* ---------------- Puzzle ---------------- */
 
@@ -42,6 +53,16 @@ let finished = saved?.finished ?? false;
 let won = saved?.won ?? false;
 let phase = saved?.phase ?? "rule"; // rule -> repair
 let startTime = saved?.startTime ?? null;
+let gameStarted = saved?.startTime != null;
+
+function beginRun() {
+  if (gameStarted || finished) return;
+
+  gameStarted = true;
+  startTimer();
+  persist();
+}
+
 
 /* ---------------- Timer ---------------- */
 
@@ -93,7 +114,7 @@ function render() {
       <div class="card">
         <div class="mono">${puzzle.corrupted}</div>
       </div>
-      <p>Repair this word using the same rule.</p>
+      <p>Repair this word by reversing the transformation. Type the real word.</p>
     `;
   }
 
@@ -227,8 +248,4 @@ shareBtn.addEventListener("click", async () => {
 
 render();
 renderStats();
-
-if (!finished) {
-  startTimer(); // always start immediately
-}
 

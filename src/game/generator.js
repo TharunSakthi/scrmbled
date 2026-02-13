@@ -53,12 +53,13 @@ export function getDailyPuzzle() {
   const exA = `${w1.toUpperCase()} → ${rule.apply(w1).toUpperCase()}`;
   const exB = `${w2.toUpperCase()} → ${rule.apply(w2).toUpperCase()}`;
 
-  const solution = rule.apply(repair).toUpperCase();
+  const corrupted = rule.apply(repair).toUpperCase(); // broken output shown to user
+  const solution = repair.toUpperCase();              // real word they must type
 
   return {
     exampleA: exA,
     exampleB: exB,
-    corrupted: repair.toUpperCase(),
+    corrupted,
     solution,
     ruleKeyword: rule.keyword,
     ruleLabel: rule.label
