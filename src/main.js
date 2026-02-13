@@ -11,6 +11,23 @@ const btn = document.getElementById("submitGuess");
 const feedback = document.getElementById("feedback");
 const statsDiv = document.getElementById("stats");
 
+const helpBtn = document.getElementById("helpBtn");
+const helpModal = document.getElementById("helpModal");
+const closeHelp = document.getElementById("closeHelp");
+
+helpBtn.addEventListener("click", () => helpModal.classList.remove("hidden"));
+closeHelp.addEventListener("click", () => helpModal.classList.add("hidden"));
+helpModal.addEventListener("click", (e) => {
+  if (e.target === helpModal) helpModal.classList.add("hidden");
+});
+
+// show once on first visit
+if (!localStorage.getItem("seenHelp")) {
+  helpModal.classList.remove("hidden");
+  localStorage.setItem("seenHelp", "1");
+}
+
+
 const puzzleNumber = getPuzzleNumber();
 
 let saved = loadGame(puzzleNumber);

@@ -8,7 +8,7 @@
   <!-- SEO -->
   <meta name="description" content="Scrmbled — a daily puzzle where you deduce the hidden transformation rule.">
 
-  <!-- Open Graph (Discord, Twitter, Reddit preview) -->
+  <!-- Open Graph -->
   <meta property="og:title" content="Scrmbled">
   <meta property="og:description" content="Can you figure out today's rule? A new puzzle every day.">
   <meta property="og:type" content="website">
@@ -25,14 +25,19 @@
 <body>
   <div id="app">
 
-    <h1>Scrmbled</h1>
+    <!-- Header -->
+    <div class="topbar">
+      <h1>Scrmbled</h1>
+      <button id="helpBtn" class="iconBtn">?</button>
+    </div>
+
     <p id="subtitle">Find the hidden transformation rule</p>
-    <p> Guess the rule transforming each word into the next. You get 6 tries. </p>
+    <p>Guess the rule transforming each word into the next. You get 6 tries.</p>
 
     <!-- Puzzle examples -->
     <div id="examples"></div>
 
-    <!-- Guess input row -->
+    <!-- Guess input -->
     <div class="row">
       <input id="guessInput" placeholder="Type the rule..." />
       <button id="submitGuess">Guess</button>
@@ -42,28 +47,35 @@
 
     <button id="shareBtn" style="display:none;">Share</button>
 
-    <!-- NEW: Stats panel -->
+    <!-- Stats -->
     <div id="stats"></div>
-    <div id="howto" class="card howto">
-  <h3>How to play</h3>
 
-  <p>Each pair of words follows a hidden rule.</p>
-  <p>Your goal: figure out the transformation.</p>
-
-  <ul>
-    <li>You get <b>6 guesses</b></li>
-    <li>Each wrong guess reveals another example</li>
-    <li>The rule is always consistent</li>
-  </ul>
-
-  <div class="examples">
-    <div class="mono">SMILE → MILES</div>
-    <div class="mono">PLATE → LATEP</div>
   </div>
 
-  <p class="hint"><b>Example rule:</b> rotate letters left by 1</p>
-</div>
 
+  <!-- HELP MODAL -->
+  <div id="helpModal" class="modal hidden">
+    <div class="modalContent">
+      <button id="closeHelp" class="closeBtn">×</button>
+
+      <h2>How to play</h2>
+
+      <p>Each pair of words follows a hidden rule.</p>
+      <p>Your goal is to figure out the transformation.</p>
+
+      <ul>
+        <li>You get <b>6 guesses</b></li>
+        <li>Wrong guesses reveal another example</li>
+        <li>The rule is always consistent</li>
+      </ul>
+
+      <div class="examples">
+        <div class="mono">SMILE → MILES</div>
+        <div class="mono">PLATE → LATEP</div>
+      </div>
+
+      <p><b>Example rule:</b> rotate letters left by 1</p>
+    </div>
   </div>
 
   <script type="module" src="/src/main.js"></script>
