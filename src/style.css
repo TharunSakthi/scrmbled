@@ -5,26 +5,21 @@ h1 { margin: 0 0 6px; font-size: 44px; letter-spacing: 0.5px; }
 #subtitle { margin: 0 0 18px; opacity: 0.85; }
 .card { background: #121826; border: 1px solid #1f2a44; border-radius: 14px; padding: 16px; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.row { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
 input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #26324f; background: #0f1422; color: #e9eef7; }
 button { padding: 10px 12px; border-radius: 10px; border: 1px solid #2d3a5c; background: #1b2a4a; color: #e9eef7; cursor: pointer; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 #feedback { margin-top: 12px; min-height: 22px; }
 .small { opacity: 0.8; font-size: 14px; }
 
-.howto {
-  margin-top: 26px;
-  line-height: 1.6;
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
-.howto h3 {
-  margin-top: 0;
-}
 
-.howto ul {
-  padding-left: 18px;
-  margin: 10px 0;
-}
 
 .examples {
   background: #0f1422;
@@ -32,11 +27,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   border-radius: 10px;
   padding: 10px;
   margin: 12px 0;
-}
-
-.hint {
-  opacity: 0.85;
-  font-size: 14px;
 }
 
 
@@ -91,3 +81,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   cursor: pointer;
 }
 
+.timer {
+  width: min(560px, 92vw);
+  margin: 10px auto 0;
+  opacity: 0.85;
+  font-size: 14px;
+  text-align: right;
+}
