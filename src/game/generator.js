@@ -1,48 +1,66 @@
-import { RULES } from "./rules.js";
-import { WORDS } from "./words.js";
 import { getPuzzleNumber } from "./dailySeed.js";
 
-// Simple deterministic PRNG from a number seed
-function mulberry32(seed) {
-  let t = seed >>> 0;
+// small deterministic RNG
+function mulberry32(a) {
   return function () {
-    t += 0x6D2B79F5;
-    let r = Math.imul(t ^ (t >>> 15), 1 | t);
-    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-function pickN(rng, arr, n) {
-  const copy = [...arr];
-  const out = [];
-  while (out.length < n && copy.length) {
-    const idx = Math.floor(rng() * copy.length);
-    out.push(copy.splice(idx, 1)[0]);
+function pick(rng, arr) {
+  return arr[Math.floor(rng() * arr.length)];
+}
+
+const WORDS = [
+  "planet","silver","marble","garden","rocket","castle","signal","puzzle",
+  "button","animal","stream","flight","memory","shadow","circle","random",
+  "candle","wallet","winter","summer","coffee","mountain","picture","friend"
+];
+
+// keep rules simple + explainable
+const RULES = [
+  { label: "rotate left 1", keyword: "rotate left 1", apply: (w) => w.slice(1) + w[0] },
+  { label: "rotate right 1", keyword: "rotate right 1", apply: (w) => w.at(-1) + w.slice(0, -1) },
+  { label: "reverse", keyword: "reverse", apply: (w) => w.split("").reverse().join("") },
+  {
+    label: "swap halves",
+    keyword: "swap halves",
+    apply: (w) => {
+      const mid = Math.floor(w.length / 2);
+      return w.slice(mid) + w.slice(0, mid);
+    }
   }
-  return out;
-}
+];
 
-export function generateDailyPuzzle() {
+export function getDailyPuzzle() {
   const puzzleNumber = getPuzzleNumber();
-  const rng = mulberry32(puzzleNumber);
+  const rng = mulberry32(1337 + puzzleNumber);
 
-  const rule = RULES[Math.floor(rng() * RULES.length)];
-  const pickedWords = pickN(rng, WORDS, 3);
+  const rule = pick(rng, RULES);
 
-  const examples = pickedWords.map((w) => ({
-    input: w,
-    output: rule.apply(w)
-  }));
+  // pick 2 example words (different)
+  let w1 = pick(rng, WORDS);
+  let w2 = pick(rng, WORDS);
+  while (w2 === w1) w2 = pick(rng, WORDS);
 
-  return { puzzleNumber, rule };
-}
+  // choose repair word (different)
+  let repair = pick(rng, WORDS);
+  while (repair === w1 || repair === w2) repair = pick(rng, WORDS);
 
-export function getExamplesForPuzzle(puzzleNumber, revealCount) {
-  const rng = mulberry32(puzzleNumber);
-  const rule = RULES[Math.floor(rng() * RULES.length)];
-  const pickedWords = pickN(rng, WORDS, 6);
+  const exA = `${w1.toUpperCase()} → ${rule.apply(w1).toUpperCase()}`;
+  const exB = `${w2.toUpperCase()} → ${rule.apply(w2).toUpperCase()}`;
 
-  const examples = pickedWords.map((w) => ({ input: w, output: rule.apply(w) }));
-  return { rule, examples: examples.slice(0, revealCount) };
+  const solution = rule.apply(repair).toUpperCase();
+
+  return {
+    // what main.js expects
+    exampleA: exA,
+    exampleB: exB,
+    corrupted: repair.toUpperCase(),
+    solution,
+    ruleKeyword: rule.keyword
+  };
 }
