@@ -1,6 +1,6 @@
 import { RULES } from "./rules.js";
 import { WORDS } from "./words.js";
-import { getPuzzleNumber } from "./dailyseed.js";
+import { getPuzzleNumber } from "./dailySeed.js";
 
 // Simple deterministic PRNG from a number seed
 function mulberry32(seed) {
