@@ -114,7 +114,7 @@ function render() {
       <div class="card">
         <div class="mono">${puzzle.corrupted}</div>
       </div>
-      <p>Repair this word by reversing the transformation. Type the real word.</p>
+      <p>Repair this by <b>undoing</b> the rule. Type the original word.</p>
     `;
   }
 
@@ -162,7 +162,10 @@ btn.addEventListener("click", () => {
 
 
   if (phase === "rule") {
-    if (guess.includes(puzzle.ruleKeyword)) {
+    const g = guess;
+    const k = puzzle.ruleKeyword.toLowerCase();
+    if (g === k || g.includes(k) || k.includes(g)) {
+
       phase = "repair";
       feedback.textContent = "Correct rule! Now repair the word.";
       input.value = "";
@@ -178,7 +181,7 @@ btn.addEventListener("click", () => {
     if (guess === normalize(puzzle.solution)) {
       won = true;
       persist();
-      endGame("Machine repaired!");
+      endGame(`Machine repaired! Rule: ${puzzle.ruleLabel}`);
       return;
     } else {
       feedback.textContent = "Incorrect repair.";
@@ -188,7 +191,7 @@ btn.addEventListener("click", () => {
   if (attempts >= 6) {
     won = false;
     persist();
-    endGame(`Out of attempts. Repair answer: ${puzzle.solution}`);
+    endGame(`Out of attempts. Rule: ${puzzle.ruleLabel}. Repair answer: ${puzzle.solution}`);
   }
 
   input.value = "";
