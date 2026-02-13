@@ -2,126 +2,191 @@ import "./style.css";
 import { loadStats, saveStats } from "./game/stats.js";
 import { loadGame, saveGame } from "./game/storage.js";
 import { getPuzzleNumber } from "./game/dailySeed.js";
-import { getExamplesForPuzzle } from "./game/generator.js";
+import { getDailyPuzzle } from "./game/generator.js";
 
-const shareBtn = document.getElementById("shareBtn");
+/* ---------------- DOM ---------------- */
+
 const examplesDiv = document.getElementById("examples");
 const input = document.getElementById("guessInput");
 const btn = document.getElementById("submitGuess");
 const feedback = document.getElementById("feedback");
 const statsDiv = document.getElementById("stats");
+const shareBtn = document.getElementById("shareBtn");
 
 const helpBtn = document.getElementById("helpBtn");
 const helpModal = document.getElementById("helpModal");
 const closeHelp = document.getElementById("closeHelp");
 
+/* ---------------- Help modal ---------------- */
+
 helpBtn.addEventListener("click", () => helpModal.classList.remove("hidden"));
 closeHelp.addEventListener("click", () => helpModal.classList.add("hidden"));
-helpModal.addEventListener("click", (e) => {
+helpModal.addEventListener("click", e => {
   if (e.target === helpModal) helpModal.classList.add("hidden");
 });
 
-// show once on first visit
 if (!localStorage.getItem("seenHelp")) {
   helpModal.classList.remove("hidden");
   localStorage.setItem("seenHelp", "1");
 }
 
+/* ---------------- Puzzle ---------------- */
 
 const puzzleNumber = getPuzzleNumber();
+const puzzle = getDailyPuzzle();
 
 let saved = loadGame(puzzleNumber);
 
 let attempts = saved?.attempts ?? 0;
-let revealCount = saved?.revealCount ?? 2;
 let finished = saved?.finished ?? false;
 let won = saved?.won ?? false;
+let phase = saved?.phase ?? "rule"; // rule -> repair
+let startTime = saved?.startTime ?? null;
 
-const maxAttempts = 6;
+/* ---------------- Timer ---------------- */
 
-function showShare() {
-  shareBtn.style.display = "inline-block";
-}
+let timerInterval = null;
 
+const timerEl = document.createElement("div");
+timerEl.className = "timer";
+timerEl.textContent = "Time: 0:00";
+document.getElementById("app").prepend(timerEl);
 
 function persist() {
-  saveGame({ puzzleNumber, attempts, revealCount, finished, won });
+  saveGame({ puzzleNumber, attempts, finished, won, phase, startTime });
 }
 
-function normalize(s) {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function startTimer() {
+  if (!startTime) {
+    startTime = Date.now();
+    persist();
+  }
+
+  if (timerInterval) return;
+
+  timerInterval = setInterval(() => {
+    const s = Math.floor((Date.now() - startTime) / 1000);
+    const m = Math.floor(s / 60);
+    const sec = (s % 60).toString().padStart(2, "0");
+    timerEl.textContent = `Time: ${m}:${sec}`;
+  }, 1000);
 }
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+/* ---------------- Rendering ---------------- */
 
 function render() {
-  const { examples } = getExamplesForPuzzle(puzzleNumber, revealCount);
-
-  examplesDiv.innerHTML = `
-    <p>Puzzle #${puzzleNumber}</p>
-    <div>
-      ${examples
-        .map(
-          (ex) => `<div style="font-family: monospace; margin: 6px 0;">
-            <b>${ex.input}</b> → <b>${ex.output}</b>
-          </div>`
-        )
-        .join("")}
-    </div>
-    <p>Attempts: ${attempts}/${maxAttempts}</p>
-  `;
+  if (phase === "rule") {
+    examplesDiv.innerHTML = `
+      <div class="card">
+        <div class="mono">${puzzle.exampleA}</div>
+        <div class="mono">${puzzle.exampleB}</div>
+      </div>
+      <p>What rule transforms the first word into the second?</p>
+    `;
+  } else {
+    examplesDiv.innerHTML = `
+      <div class="card">
+        <div class="mono">${puzzle.corrupted}</div>
+      </div>
+      <p>Repair this word using the same rule.</p>
+    `;
+  }
 
   if (finished) {
     input.disabled = true;
     btn.disabled = true;
-    feedback.textContent = won
-      ? "You already solved today's Scrmbled!"
-      : "You already attempted today's Scrmbled!";
+    shareBtn.style.display = "inline-block";
   }
 }
 
-function checkGuess(guessRaw) {
-  const { rule } = getExamplesForPuzzle(puzzleNumber, revealCount);
-  const guess = normalize(guessRaw);
+/* ---------------- Guess checking ---------------- */
 
-  const accepted = rule.accepted.map(normalize);
-  const hit = accepted.some((a) => guess === a || guess.includes(a) || a.includes(guess));
-
-  return { hit, rule };
+function normalize(s) {
+  return s.toLowerCase().trim();
 }
 
 function endGame(message) {
+  finished = true;
+  persist();
+  stopTimer();
+
   feedback.textContent = message;
   input.disabled = true;
   btn.disabled = true;
 
   updateStats();
-  renderStats();   // ADD THIS
-  showShare();
+  renderStats();
+  shareBtn.style.display = "inline-block";
 }
 
+btn.addEventListener("click", () => {
+  if (finished) return;
+
+  const guess = normalize(input.value);
+  if (!guess) return;
+
+  startTimer();
+
+  attempts++;
+
+  if (phase === "rule") {
+    if (guess.includes(puzzle.ruleKeyword)) {
+      phase = "repair";
+      feedback.textContent = "Correct rule! Now repair the word.";
+      input.value = "";
+      persist();
+      render();
+      return;
+    } else {
+      feedback.textContent = "That doesn't seem right.";
+    }
+  }
+
+  else if (phase === "repair") {
+    if (guess === normalize(puzzle.solution)) {
+      won = true;
+      persist();
+      endGame("Machine repaired!");
+      return;
+    } else {
+      feedback.textContent = "Incorrect repair.";
+    }
+  }
+
+  if (attempts >= 6) {
+    won = false;
+    persist();
+    endGame(`Out of attempts. Answer: ${puzzle.solution}`);
+  }
+
+  input.value = "";
+});
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") btn.click();
+});
+
+/* ---------------- Stats ---------------- */
 
 function updateStats() {
   let stats = loadStats();
+  if (stats.lastPlayed === puzzleNumber) return;
 
-  const today = puzzleNumber;
-
-  if (stats.lastPlayed === today) return;
-
-  stats.played += 1;
+  stats.played++;
 
   if (won) {
-    stats.wins += 1;
-    stats.streak += 1;
+    stats.wins++;
+    stats.streak++;
     stats.best = Math.max(stats.best, stats.streak);
   } else {
     stats.streak = 0;
   }
 
-  stats.lastPlayed = today;
-
+  stats.lastPlayed = puzzleNumber;
   saveStats(stats);
 }
 
@@ -140,67 +205,19 @@ function renderStats() {
   `;
 }
 
-
-function buildShareText() {
-  let result = won ? "🟩" : "⬛";
-  let row = result.repeat(attempts) + "⬜".repeat(6 - attempts);
-
-  return `Scrmbled #${puzzleNumber}\n${row}\n${won ? attempts + "/6" : "X/6"}`;
-}
-
-
-btn.addEventListener("click", () => {
-  if (input.disabled) return;
-
-  const val = input.value;
-  if (!val.trim()) return;
-
-  attempts += 1;
-  persist();
-
-  const { hit, rule } = checkGuess(val);
-
-  if (hit) {
-    finished = true;
-    won = true;
-    persist();
-    endGame(`Correct! Rule was: ${rule.label}`);
-    return;
-  }
-
-  // wrong
-  feedback.textContent = "Not quite. Another example revealed.";
-  input.value = "";
-
-  revealCount = Math.min(revealCount + 1, 6);
-  persist();
-
-  if (attempts >= maxAttempts) {
-    finished = true;
-    won = false;
-    persist();
-    endGame(`Out of tries. Rule was: ${rule.label}`);
-    return;
-  }
-
-  render();
-});
-
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") btn.click();
-});
-
-shareBtn.style.display = finished ? "inline-block" : "none";
+/* ---------------- Share ---------------- */
 
 shareBtn.addEventListener("click", async () => {
-  const text = buildShareText();
+  const result = won ? "🟩" : "⬛";
+  const row = result.repeat(attempts) + "⬜".repeat(6 - attempts);
+  const text = `Scrmbled #${puzzleNumber}\n${row}\n${won ? attempts + "/6" : "X/6"}`;
+
   await navigator.clipboard.writeText(text);
   shareBtn.textContent = "Copied!";
 });
 
-// Initial render
-persist();
+/* ---------------- Init ---------------- */
+
 render();
 renderStats();
-
-
+if (startTime && !finished) startTimer();
