@@ -56,11 +56,12 @@ export function getDailyPuzzle() {
   const solution = rule.apply(repair).toUpperCase();
 
   return {
-    // what main.js expects
     exampleA: exA,
     exampleB: exB,
     corrupted: repair.toUpperCase(),
     solution,
-    ruleKeyword: rule.keyword
+    ruleKeyword: rule.keyword,
+    ruleLabel: rule.label
   };
+
 }
